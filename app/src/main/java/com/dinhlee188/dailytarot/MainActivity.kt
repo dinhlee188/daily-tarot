@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TarotApp() {
     val context = LocalContext.current
@@ -125,7 +126,7 @@ fun TarotApp() {
                                 }
                         ) {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(if (alreadyPicked) "✓" else "\${index + 1}")
+                                Text(if (alreadyPicked) "✓" else (index + 1).toString())
                             }
                         }
                     }
@@ -134,9 +135,9 @@ fun TarotApp() {
                 Spacer(Modifier.height(8.dp))
 
                 picks.forEach { picked ->
-                    val slot = spread.slots.getOrElse(picked.order - 1) { "Lá \${picked.order}" }
+                    val slot = spread.slots.getOrElse(picked.order - 1) { "Lá " + picked.order }
                     Text(
-                        "\${picked.order}. \$slot — \${picked.card.name} — \${if (picked.card.reversed) "Ngược" else "Xuôi"}",
+                        picked.order.toString() + ". " + slot + " — " + picked.card.name + " — " + orientationText(picked.card),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -147,13 +148,13 @@ fun TarotApp() {
                         Button(onClick = {
                             val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
                             val lines = mutableListOf<String>()
-                            lines += "\${spread.label} — \$date"
+                            lines += spread.label + " — " + date
                             if (spread == SpreadType.CUSTOM && question.isNotBlank()) {
-                                lines += "Question: \$question"
+                                lines += "Question: " + question
                             }
                             picks.forEach { p ->
-                                val slot = spread.slots.getOrElse(p.order - 1) { "Lá \${p.order}" }
-                                lines += "\${p.order}. \$slot — \${p.card.name} — \${if (p.card.reversed) "Ngược" else "Xuôi"}"
+                                val slot = spread.slots.getOrElse(p.order - 1) { "Lá " + p.order }
+                                lines += p.order.toString() + ". " + slot + " — " + p.card.name + " — " + orientationText(p.card)
                             }
                             val result = lines.joinToString("\\n")
                             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -200,6 +201,8 @@ fun HistoryBlock(context: Context) {
         }
     }
 }
+
+fun orientationText(card: TarotCard): String = if (card.reversed) "Ngược" else "Xuôi"
 
 val allCardNames = listOf(
     "The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant",
